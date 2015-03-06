@@ -81,7 +81,7 @@ describe('collection', function() {
   });
 
   it('should initialize empty collection with model constructor', function() {
-  	var Model = function() { };
+    var Model = function() { };
 
     var collection = new Collection([], {
       key: 'name',
@@ -434,14 +434,15 @@ describe('collection', function() {
     });
 
     it('should sort collection', function() {
-
       var o3 = { id: 3, name: 'foobar' };
       var o4 = { id: 4, name: 'foobar' };
       collection.push(o3, o4);
 
-      var result = collection.sort(function(o1, o2) {
+      var sortFn = function(o1, o2) {
         return o2.id - o1.id
-      });
+      };
+
+      var result = collection.sort(sortFn);
 
       expect(result).toBe(collection);
       expect(collection.length).toBe(4);
@@ -456,6 +457,62 @@ describe('collection', function() {
         3: 1,
         4: 0
       });
+
+      expect(collection.$$sortFn).toBe(sortFn);
+    });
+
+    it('should get sorted index of collection', function() {
+      var sortFn = function(o1, o2) {
+        return o2.id - o1.id
+      };
+
+      collection.sort(sortFn);
+
+      var o3 = { id: 3, name: 'foobar' };
+      var o4 = { id: -1, name: 'foobar' };
+
+      expect(collection.sortedIndex(o3)).toBe(0);
+      expect(collection.sortedIndex(o4)).toBe(2);
+    });
+
+    it('should return sorted index equal to last element + 1 if collection is not sorted', function() {
+      var o3 = { id: 3, name: 'foobar' };
+      var o4 = { id: -1, name: 'foobar' };
+
+      expect(collection.sortedIndex(o3)).toBe(2);
+      expect(collection.sortedIndex(o4)).toBe(2);
+    });
+
+    it('should return sorted index equal to default value if collection is not sorted', function() {
+      var o3 = { id: 3, name: 'foobar' };
+      var o4 = { id: -1, name: 'foobar' };
+
+      expect(collection.sortedIndex(o3, false)).toBe(0);
+      expect(collection.sortedIndex(o4, true)).toBe(2);
+    });
+
+    it('should return sorted index as next available index', function() {
+      var sortFn = function(o1, o2) {
+        return o1.id - o2.id
+      };
+
+      collection.sort(sortFn);
+
+      var o3 = { id: 2, name: 'foobar' };
+
+      expect(collection.sortedIndex(o3, true)).toBe(2);
+    });
+
+    it('should return sorted index as previous available index', function() {
+      var sortFn = function(o1, o2) {
+        return o1.id - o2.id
+      };
+
+      collection.sort(sortFn);
+
+      var o3 = { id: 2, name: 'foobar' };
+
+      expect(collection.sortedIndex(o3, false)).toBe(1);
     });
 
     it('should push new elements', function() {
